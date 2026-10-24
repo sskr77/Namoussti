@@ -1,0 +1,703 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#100c20">
+<title>A Little Universe for Namoussti ♡</title>
+
+<style>
+:root {
+  --bg: #100c20;
+  --panel: rgba(35, 25, 53, .88);
+  --pink: #ff91bd;
+  --purple: #c7a9ff;
+  --white: #fff5fc;
+  --muted: #c4b5d7;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--white);
+  background: var(--bg);
+  font-family: Georgia, "Times New Roman", serif;
+}
+#sky, #glow, #stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+#sky {
+  background:
+    radial-gradient(ellipse at 15% 20%, #4d2864, transparent 42%),
+    radial-gradient(ellipse at 85% 75%, #32235d, transparent 42%),
+    linear-gradient(145deg, #090a18, #191027 55%, #0b1022);
+}
+#glow {
+  background: radial-gradient(circle at 50% 40%, #ff547f13, transparent 55%);
+  animation: breathe 7s ease-in-out infinite alternate;
+}
+#stars { overflow: hidden; }
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  opacity: .3;
+  animation: twinkle var(--duration) ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+  to { opacity: .95; transform: scale(1.6); }
+}
+@keyframes breathe {
+  to { opacity: 1; transform: scale(1.12); }
+}
+@keyframes float {
+  50% { transform: translateY(-12px) rotate(5deg); }
+}
+@keyframes enter {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes heartbeat {
+  15% { transform: scale(1.12); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+}
+@keyframes burst {
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(1.5) rotate(35deg);
+  }
+}
+
+#app {
+  position: relative;
+  z-index: 2;
+  width: min(100% - 28px, 760px);
+  min-height: 100vh;
+  margin: auto;
+  padding: 26px 0 110px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--muted);
+  font: 11px Arial, sans-serif;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+.progress {
+  height: 3px;
+  background: #ffffff19;
+  margin: 14px 0 25px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+#progressFill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #ff547f, #c7a9ff);
+  transition: width .6s;
+}
+.screen {
+  display: none;
+  min-height: 65vh;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  text-align: center;
+  animation: enter .7s ease both;
+}
+.screen.active { display: flex; }
+.eyebrow {
+  margin-bottom: 15px;
+  color: var(--pink);
+  font: 11px Arial, sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+h1 {
+  font-size: clamp(40px, 9vw, 76px);
+  font-weight: normal;
+  line-height: 1.06;
+  margin: 0 0 18px;
+}
+h2 {
+  font-size: clamp(30px, 6vw, 45px);
+  line-height: 1.15;
+  font-weight: normal;
+  margin: 0 0 16px;
+}
+p {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.8;
+}
+.subtitle { max-width: 490px; }
+.moon {
+  font-size: 64px;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 0 24px #c7a9ff99);
+  animation: float 4s ease-in-out infinite;
+}
+.panel {
+  width: 100%;
+  padding: clamp(20px, 5vw, 38px);
+  border: 1px solid #ffffff1c;
+  border-radius: 24px;
+  background: var(--panel);
+  box-shadow: 0 25px 80px #0003;
+  backdrop-filter: blur(12px);
+}
+button {
+  border: 1px solid #ffffff36;
+  border-radius: 999px;
+  background: #ffffff0b;
+  color: var(--white);
+  padding: 13px 21px;
+  font: 15px Georgia, serif;
+  cursor: pointer;
+  transition: transform .2s, background .2s;
+}
+button:hover {
+  transform: translateY(-2px);
+  background: #ffffff18;
+}
+button:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: 3px;
+}
+.primary {
+  background: linear-gradient(110deg, #e84f85, #9c69e8);
+  border: none;
+  box-shadow: 0 8px 32px #e84f8533;
+}
+.primary:hover {
+  background: linear-gradient(110deg, #ff6c9b, #b08aff);
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.memory-photo {
+  display: block;
+  width: min(100%, 360px);
+  max-height: 430px;
+  object-fit: contain;
+  margin: 20px auto;
+  padding: 8px 8px 25px;
+  background: #fff8f6;
+  border-radius: 4px;
+  box-shadow: 0 15px 55px #0007;
+  transform: rotate(-2deg);
+  animation: enter 1s ease both;
+}
+.caption {
+  color: #ffe1ef;
+  font-size: 18px;
+  font-style: italic;
+}
+.small {
+  color: #a99bbd;
+  font: 12px/1.7 Arial, sans-serif;
+}
+.choices {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+.choice {
+  text-align: left;
+  border-radius: 14px;
+  line-height: 1.5;
+}
+.choice.correct {
+  border-color: var(--pink);
+  background: #ff91bd19;
+}
+#choiceFeedback {
+  min-height: 30px;
+  color: #ffc1dc;
+  font-size: 14px;
+  margin-top: 12px;
+}
+.music-note {
+  font-size: 55px;
+  animation: float 3s ease-in-out infinite;
+}
+.heart-game {
+  border: none;
+  background: transparent;
+  font: 90px Arial, sans-serif;
+  animation: heartbeat 1.1s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px #ff547f66);
+}
+#heartCount {
+  color: var(--pink);
+  font: 13px Arial, sans-serif;
+}
+.note {
+  text-align: left;
+  padding: 17px;
+  margin: 12px 0;
+  border: 1px solid #ffffff19;
+  border-radius: 14px;
+  background: #ffffff08;
+  cursor: pointer;
+}
+.note p {
+  display: none;
+  font-size: 15px;
+}
+.note.open p {
+  display: block;
+  animation: enter .4s ease;
+}
+.letter {
+  color: #f8eaf8;
+  text-align: left;
+  white-space: pre-line;
+  line-height: 1.9;
+  font-size: 16px;
+}
+.signature {
+  color: var(--pink);
+  font-size: 22px;
+  font-style: italic;
+  margin-top: 22px;
+}
+.footer {
+  text-align: center;
+  margin-top: 30px;
+  color: #a89ab9;
+  font: 10px Arial, sans-serif;
+  letter-spacing: 1px;
+}
+
+/* Persistent music bar */
+#musicPlayer {
+  position: fixed;
+  z-index: 20;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 9px 14px;
+  background: linear-gradient(180deg, #100c20f0, #100c20);
+  border-top: 1px solid #ffffff20;
+  backdrop-filter: blur(15px);
+}
+.music-header {
+  width: min(100%, 600px);
+  margin: 0 auto 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font: 10px Arial, sans-serif;
+  letter-spacing: 1px;
+}
+#musicToggle {
+  font: 11px Arial, sans-serif;
+  padding: 5px 10px;
+}
+#youtubeContainer {
+  width: min(100%, 600px);
+  height: 200px;
+  margin: auto;
+  overflow: hidden;
+  border-radius: 12px;
+  transition: height .25s ease;
+}
+#youtubePlayer {
+  display: block;
+  width: 100%;
+  height: 200px;
+  border: 0;
+}
+#musicPlayer.collapsed #youtubeContainer {
+  height: 0;
+}
+#musicPlayer.collapsed { padding-bottom: 9px; }
+
+.burst-heart {
+  position: fixed;
+  z-index: 30;
+  pointer-events: none;
+  animation: burst 1.5s ease-out forwards;
+}
+
+@media (min-width: 600px) {
+  .choices { grid-template-columns: 1fr 1fr; }
+  #app { padding-top: 35px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<div id="sky"></div>
+<div id="glow"></div>
+<div id="stars" aria-hidden="true"></div>
+
+<main id="app">
+  <header class="topbar">
+    <span>♡ A little universe</span>
+    <span id="levelLabel">A story for you</span>
+  </header>
+
+  <div class="progress">
+    <div id="progressFill"></div>
+  </div>
+
+  <section class="screen active" id="level0">
+    <div class="moon">☾</div>
+    <div class="eyebrow">A tiny universe made for one person</div>
+    <h1>A Little Universe<br>for <span style="color:var(--pink)">Namoussti</span></h1>
+    <p class="subtitle">
+      Somewhere between late-night conversations, games, and music,
+      a little universe started to feel like home.
+    </p>
+    <button class="primary" onclick="go(1)">Enter our universe ♡</button>
+    <p class="small">A little journey, made just for you.</p>
+  </section>
+
+  <section class="screen" id="level1">
+    <div class="panel">
+      <div class="eyebrow">Level 01 · The beginning</div>
+      <h2>It started with little things.</h2>
+      <p>
+        A game here, a conversation there, sharing music and talking
+        about the things we love.
+      </p>
+      <p>
+        Without even noticing, those little moments started meaning
+        more and more to me.
+      </p>
+      <button class="primary" onclick="go(2)">Show me a memory →</button>
+    </div>
+  </section>
+
+  <section class="screen" id="level2">
+    <div class="eyebrow">Level 02 · Our little world</div>
+    <h2>Look at us. 🥹</h2>
+    <p>Even in our own little worlds, somehow I found you.</p>
+    <img class="memory-photo"
+         src="images/couple.png"
+         alt="Our couple avatars with roses">
+    <p class="caption">My favorite Duo ❤️</p>
+    <p class="small">One picture. A thousand little feelings.</p>
+    <button class="primary" onclick="go(3)">There's more →</button>
+  </section>
+
+  <section class="screen" id="level3">
+    <div class="eyebrow">Level 03 · The way I see you</div>
+    <h2>You have your own kind of magic.</h2>
+    <img class="memory-photo"
+         src="images/purple-memory.png"
+         alt="A purple cinematic memory">
+    <p class="subtitle">
+      Somewhere between our conversations,
+      you became someone really special to me.
+    </p>
+    <button class="primary" onclick="go(4)">Play our little game →</button>
+  </section>
+
+  <section class="screen" id="level4">
+    <div class="panel">
+      <div class="eyebrow">Level 04 · A tiny question</div>
+      <h2>What made our little world special?</h2>
+      <p>Pick the answer that feels right. 💌</p>
+      <div class="choices">
+        <button class="choice" onclick="answer(false)">✦ Being perfect all the time</button>
+        <button class="choice" onclick="answer(true)"> ✦ The little moments we shared</button>
+        <button class="choice" onclick="answer(false)">✦ Never running out of things to say</button>
+        <button class="choice" onclick="answer(false)">✦ Winning every game</button>
+      </div>
+      <div id="choiceFeedback" aria-live="polite"></div>
+      <button id="quizNext" class="primary" hidden onclick="go(5)">
+        You know me →
+      </button>
+    </div>
+  </section>
+
+  <section class="screen" id="level5">
+    <div class="music-note">♫</div>
+    <div class="eyebrow">Level 05 · Song Remind Me Of U</div>
+    <h2>Let's stay here for a moment.</h2>
+    <p class="subtitle">
+      Press play in the music player below. Let the song play while
+      you explore this little universe. Some feelings are easier to
+      share through music.
+    </p>
+    <div id="youtubeContainer">
+    <iframe
+      id="youtubePlayer"
+      src="https://www.youtube.com/embed/EUs1NoaErj0?autoplay=0&loop=1&playlist=EUs1NoaErj0&playsinline=1&controls=1&rel=0"
+      title="Our song for Namoussti"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen>
+    </iframe>
+  </div>
+  <br>
+    <button class="primary" onclick="go(6)">One more little game →</button>
+  </section>
+
+  <section class="screen" id="level6">
+    <div class="eyebrow">Level 06 · Collect some love</div>
+    <h2>Catch my heart. ❤️</h2>
+    <p>Tap the heart 10 times to unlock a little message.</p>
+    <button class="heart-game" onclick="tapHeart()" aria-label="Collect a heart">💗</button>
+    <div id="heartCount" aria-live="polite">0 / 10 hearts collected</div>
+    <p id="heartMessage" class="caption"></p>
+    <button id="heartNext" class="primary" hidden onclick="go(7)">
+      Unlock your notes →
+    </button>
+  </section>
+
+  <section class="screen" id="level7">
+    <div class="eyebrow">Level 07 · Little secrets</div>
+    <h2>Three tiny notes for you.</h2>
+    <p>Tap each note to open it. 💌</p>
+    <div class="panel">
+      <div class="note" onclick="toggleNote(this)">
+        💌 <strong>Open when you need a smile</strong>
+        <p>
+          N7ebk dima tath7ek w far7ana w 7ata ken fama 7aja m9al9etk ena dima bjambek,
+          w kol ma t7es ro7k cv pas tfaker eli fama chkoun far7an 5atr enti mawjouda fi 7yetou ♡
+        </p>
+      </div>
+      <div class="note" onclick="toggleNote(this)">
+        🌙 <strong>Open on a quiet night</strong>
+        <p>
+          ma tensech eli ena n7ebk barcha namoussti 
+          w l9it slogan behi hehehe 
+          "From my heart to the sky, I'll love you till I die."
+        </p>
+      </div>
+      <div class="note" onclick="toggleNote(this)">
+        ❤️ <strong>Open when you wonder how I feel</strong>
+        <p>
+          You matter to me, Namoussti. from every moment we share 
+          nal3bou, netfarjou, nesm3ou el 8ne, wela 7ata na7kiw khw
+          i start to feel that ur my soulmate and ur the one for me 
+        </p>
+      </div>
+    </div>
+    <button class="primary" onclick="go(8)">One last thing… →</button>
+  </section>
+
+  <section class="screen" id="level8">
+    <div class="moon">♡</div>
+    <div class="eyebrow">Final level · Just for you</div>
+    <h2>My Sweet Pea,</h2>
+    <div class="panel">
+      <div class="letter">
+        Namoussti 7abit na3mel el site hetha bech nproposilk bih ama ena deja zrebt w 7kit m3ak fih el mawtohu3 xD 
+        so bima anou t9ablnech w fama barcha klem njmch n9oulhoulk discord i made this webstie bech n9olk barcha 7ajet w nwarik how much i love u.
+
+        nhar ba3ed nhar, 5alitni n3aber w na7ki 3la 7ajet makontch n7ess wela njm na7ki 3lehom 9bal, w bel rasmi meli bdina na7kiw
+        denya bdet tetlawen bel chway bel chway w 9ad ma na7ki njmch n3aber 3la hetha.
+
+        na3ref li zeda 8lot fi 7a9ek barcha 9bal w hani 9a3ed n7awel w nsale7,w nhart eli waritni chneya ktebt 3leya fel korasa
+        8adi t2kdt li manich bech nal9a 3abd 7abni wela y7ebni bel tari9a athika w sama7ni lel mara 100 ken nhar jra7tek wela bakitek
+        w skr7 eli tmanit tkoun m3ah haw taw mawjoud w bech y3awthelk ay e7ses 5ayeb 7asitou.
+
+        w man7bch ykoun kol chay perfect, n7ebk bel rasmi tkoun kima enti w tetsaref 3la tbi3tek w nzidou na3rfou b3athna akther, npartagiw aw9atna m3a b3athna,
+        nath7kou, w na3mlou memories t5osna ken a7na.
+
+        Merci salma for being part of my days, and for giving me someone I genuinely look forward to talking to.
+        w merci zeda 5ater rja3t ta7ki m3aya ba3ed 3am w wech 5ater 5alitni na3ref 9imtek ♡.
+
+        w ken y9oulouli a5tar 3abd barka to share this little universe with, I'd choose you again.
+
+        <div class="signature">Love U Barcha, Sweet pea 😘</div>
+        <p>— Your sakrou7a ❤️</p>
+      </div>
+    </div>
+    <p>And this is only the beginning.</p>
+    <button class="primary" onclick="celebrate()">One last surprise ✨</button>
+    <p id="finalSurprise" class="caption" aria-live="polite"></p>
+    <button onclick="go(0)">Replay our universe ↺</button>
+  </section>
+
+  <div class="footer">MADE WITH LOVE ·♡</div>
+</main>
+
+<!-- This player is outside the game screens so it won't reload on each level. -->
+<!-- <div id="musicPlayer">
+  <div class="music-header">
+    <span>♫ LITTLE SOUNDTRACK REMIND ME OF U ♡</span>
+    <button id="musicToggle" onclick="toggleMusicPlayer()">Hide player −</button>
+  </div>
+  <div id="youtubeContainer">
+    <iframe
+      id="youtubePlayer"
+      src="https://www.youtube.com/embed/EUs1NoaErj0?autoplay=0&loop=1&playlist=EUs1NoaErj0&playsinline=1&controls=1&rel=0"
+      title="Our song for Namoussti"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allowfullscreen>
+    </iframe>
+  </div>
+</div> -->
+
+<script>
+const totalLevels = 9;
+let hearts = 0;
+let quizAnswered = false;
+let finalShown = false;
+
+const levelNames = [
+  "A story for you",
+  "The beginning",
+  "Our little world",
+  "The way I see you",
+  "A tiny question",
+  "My song For U",
+  "Collect some love",
+  "Little secrets",
+  "Just for you"
+];
+
+// Animated stars
+const starLayer = document.getElementById("stars");
+for (let i = 0; i < 95; i++) {
+  const star = document.createElement("span");
+  star.className = "star";
+  star.style.left = Math.random() * 100 + "%";
+  star.style.top = Math.random() * 100 + "%";
+  star.style.setProperty("--duration", (1.5 + Math.random() * 4) + "s");
+  star.style.animationDelay = Math.random() * 4 + "s";
+  starLayer.appendChild(star);
+}
+
+function go(level) {
+  level = Math.max(0, Math.min(totalLevels - 1, level));
+
+  document.querySelectorAll(".screen").forEach(screen => {
+    screen.classList.remove("active");
+  });
+
+  const screen = document.getElementById("level" + level);
+  if (!screen) return;
+
+  screen.classList.add("active");
+  document.getElementById("levelLabel").textContent = levelNames[level];
+  document.getElementById("progressFill").style.width =
+    (level / (totalLevels - 1) * 100) + "%";
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  try {
+    localStorage.setItem("namousstiLastLevel", String(level));
+  } catch (error) {
+    // The game works even if browser storage is unavailable.
+  }
+
+  if ([2, 3, 8].includes(level)) {
+    setTimeout(() => burstHearts(8), 250);
+  }
+}
+
+function answer(correct) {
+  if (quizAnswered) return;
+
+  const feedback = document.getElementById("choiceFeedback");
+  if (!correct) {
+    feedback.textContent = "Try again, love. Think about the little things. 💗";
+    return;
+  }
+
+  quizAnswered = true;
+  feedback.textContent =
+    "Exactly. It's the little things that become everything. ❤️";
+
+  document.querySelectorAll(".choice").forEach(button => {
+    if (button.textContent.includes("little moments")) {
+      button.classList.add("correct");
+    }
+  });
+
+  document.getElementById("quizNext").hidden = false;
+  burstHearts(12);
+}
+
+function tapHeart() {
+  if (hearts >= 10) return;
+
+  hearts++;
+  document.getElementById("heartCount").textContent =
+    hearts + " / 10 hearts collected";
+
+  burstHearts(3);
+
+  if (hearts < 10) {
+    document.getElementById("heartMessage").textContent =
+      ["A little love…", "A little love…","Another one for you…", "Keep going, Sweet Pea","Zid Nazla O5ra Te7chemch","Te7chemch 3ad 3aych 7obi","N7ebk barcha","Barcha Barcha","All The Love Namoussti","A5er Nazla ay"][hearts % 10];
+  } else {
+    document.getElementById("heartMessage").textContent =
+      "Surprise! You already have a whole heart full of my love. ❤️";
+    document.getElementById("heartNext").hidden = false;
+    burstHearts(25);
+  }
+}
+
+function toggleNote(note) {
+  note.classList.toggle("open");
+}
+
+function toggleMusicPlayer() {
+  const player = document.getElementById("musicPlayer");
+  const button = document.getElementById("musicToggle");
+  player.classList.toggle("collapsed");
+
+  button.textContent = player.classList.contains("collapsed")
+    ? "Show player +"
+    : "Hide player −";
+}
+
+function burstHearts(count = 12) {
+  const symbols = ["♡", "♥", "💗", "✦", "✨"];
+
+  for (let i = 0; i < count; i++) {
+    const item = document.createElement("span");
+    item.className = "burst-heart";
+    item.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    item.style.left = (20 + Math.random() * 60) + "vw";
+    item.style.top = (35 + Math.random() * 35) + "vh";
+    item.style.color = Math.random() > .5 ? "#ff91bd" : "#c7a9ff";
+    item.style.fontSize = (14 + Math.random() * 22) + "px";
+    item.style.setProperty("--dx", (Math.random() * 180 - 90) + "px");
+    item.style.setProperty("--dy", (-60 - Math.random() * 180) + "px");
+
+    document.body.appendChild(item);
+    setTimeout(() => item.remove(), 1600);
+  }
+}
+
+function celebrate() {
+  if (finalShown) return;
+  finalShown = true;
+  document.getElementById("finalSurprise").textContent =
+    "No matter how many levels there are, you're still my favorite part. ♡";
+  burstHearts(45);
+}
+</script>
+</body>
+</html>
